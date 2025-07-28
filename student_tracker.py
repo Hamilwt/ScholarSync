@@ -1,15 +1,19 @@
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 import bcrypt
 from datetime import datetime
+import uuid
 
 # --- Initialize Firebase ---
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
-    firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app(cred, {
+        "storageBucket": st.secrets["FIREBASE"]["storageBucket"]
+    })
 
 db = firestore.client()
+bucket = storage.bucket()
 students_ref = db.collection("students")
 chat_ref = db.collection("chat")
 
@@ -19,6 +23,14 @@ def hash_password(pw: str) -> bytes:
 
 def verify_password(pw: str, hashed: bytes) -> bool:
     return bcrypt.checkpw(pw.encode(), hashed)
+
+def upload_profile_pic(file, roll_no):
+    """Upload profile picture to Firebase Storage and return its public URL."""
+    file_ext = file.name.split('.')[-1]
+    blob = bucket.blob(f"profile_pics/{roll_no}_{uuid.uuid4()}.{file_ext}")
+    blob.upload_from_file(file, content_type=file.type)
+    blob.make_public()
+    return blob.public_url
 
 # --- Page config ---
 st.set_page_config(page_title="Student Tracker", layout="wide")
@@ -96,8 +108,10 @@ if roll_no:
             attendance = st.number_input("Attendance %", min_value=0, max_value=100, step=1)
             marks_input = st.text_area("Marks (e.g., Math:85, Python:90)")
             progress = st.selectbox("Academic Progress", ["Excellent", "Good", "Average", "Needs Improvement"])
+            profile_pic = st.file_uploader("Upload Profile Picture", type=["jpg", "jpeg", "png"])
             submitted = st.form_submit_button("Save")
             if submitted:
+                pic_url = upload_profile_pic(profile_pic, roll_no) if profile_pic else None
                 data = {
                     "name": name,
                     "course": course,
@@ -106,6 +120,7 @@ if roll_no:
                     "attendance": f"{attendance}%",
                     "marks": {m.split(':')[0].strip(): int(m.split(':')[1]) for m in marks_input.split(',') if ':' in m},
                     "academic_progress": progress,
+                    "profile_pic": pic_url,
                     "created_by": user,
                     "created_at": datetime.utcnow()
                 }
@@ -116,6 +131,8 @@ if roll_no:
         student = get_student(roll_no)
         if student:
             st.subheader(f"Details for {student['name']}")
+            if student.get("profile_pic"):
+                st.image(student["profile_pic"], width=150, caption="Profile Picture")
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown(f"**Course:** {student['course']}")
@@ -140,8 +157,12 @@ if roll_no:
                     marks_input = st.text_area("Marks", value=marks)
                     progress = st.selectbox("Academic Progress", ["Excellent","Good","Average","Needs Improvement"], 
                                             index=["Excellent","Good","Average","Needs Improvement"].index(student['academic_progress']))
+                    new_profile_pic = st.file_uploader("Upload New Profile Picture", type=["jpg","jpeg","png"])
                     updated = st.form_submit_button("Update")
                     if updated:
+                        pic_url = student.get("profile_pic")
+                        if new_profile_pic:
+                            pic_url = upload_profile_pic(new_profile_pic, roll_no)
                         students_ref.document(roll_no).update({
                             "name": name,
                             "course": course,
@@ -150,6 +171,7 @@ if roll_no:
                             "attendance": f"{attendance}%",
                             "marks": {m.split(':')[0].strip(): int(m.split(':')[1]) for m in marks_input.split(',') if ':' in m},
                             "academic_progress": progress,
+                            "profile_pic": pic_url,
                             "updated_at": datetime.utcnow()
                         })
                         st.success("Record updated.")
@@ -186,4 +208,4 @@ for m in reversed(list(messages)):
 
 # --- Footer ---
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit and Firestore")
+st.caption("Built with ❤️ using Streamlit, Firebase Firestore & Storage")
