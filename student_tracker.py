@@ -68,7 +68,7 @@ if st.session_state.user is None:
                     data = doc.to_dict()
                     if verify_password(password, data.get("password")):
                         st.session_state.user = email
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("Incorrect password.")
                 else:
