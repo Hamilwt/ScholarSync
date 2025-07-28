@@ -1,34 +1,16 @@
 import streamlit as st
-import pickle
-import os
+import firebase_admin
+from firebase_admin import credentials, firestore
 
-DATA_FILE = "student_data.pkl"
-CHAT_FILE = "chat_data.pkl"
+# --- Initialize Firebase ---
+if not firebase_admin._apps:
+    cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
+    firebase_admin.initialize_app(cred)
+db = firestore.client()
 
-# --- Load/Save Helpers ---
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "rb") as f:
-            return pickle.load(f)
-    return {}
-
-def save_data(data):
-    with open(DATA_FILE, "wb") as f:
-        pickle.dump(data, f)
-
-def load_chat():
-    if os.path.exists(CHAT_FILE):
-        with open(CHAT_FILE, "rb") as f:
-            return pickle.load(f)
-    return []
-
-def save_chat(chat):
-    with open(CHAT_FILE, "wb") as f:
-        pickle.dump(chat, f)
-
-# --- Load stored data ---
-students = load_data()
-chat_messages = load_chat()
+# --- Firestore Collections ---
+students_ref = db.collection("students")
+chat_ref = db.collection("chat")
 
 st.set_page_config(page_title="Student Tracker", layout="wide")
 st.title("📘 Student Tracker App")
@@ -39,6 +21,7 @@ st.sidebar.header("👤 Student Login / Register")
 roll_no = st.sidebar.text_input("Enter Roll Number")
 action = st.sidebar.radio("Action", ["View Info", "Register / Update Info"])
 
+# --- Register / Update Student Info ---
 if roll_no:
     if action == "Register / Update Info":
         with st.sidebar.form("student_form"):
@@ -61,7 +44,7 @@ if roll_no:
                         sub, mark = m.strip().split(":")
                         marks_dict[sub.strip()] = int(mark.strip())
 
-                students[roll_no] = {
+                students_ref.document(roll_no).set({
                     "name": name,
                     "mail": mail,
                     "course": course,
@@ -70,13 +53,14 @@ if roll_no:
                     "marks": marks_dict,
                     "attendance": attendance,
                     "academic_progress": progress
-                }
-                save_data(students)
-                st.sidebar.success("Student info saved successfully!")
+                })
+                st.sidebar.success("✅ Student info saved successfully!")
 
+# --- View Student Info ---
     elif action == "View Info":
-        student = students.get(roll_no)
-        if student:
+        doc = students_ref.document(roll_no).get()
+        if doc.exists:
+            student = doc.to_dict()
             st.subheader(f"📄 Student Details for {student['name']}")
 
             col1, col2 = st.columns(2)
@@ -97,7 +81,7 @@ if roll_no:
         else:
             st.warning("Student not found. Please register first.")
 
-# --- Real-Time Chat System (Saved Locally) ---
+# --- Real-Time Chat System with Firestore ---
 st.header("💬 Global Student Chat")
 
 with st.form("chat_form", clear_on_submit=True):
@@ -106,13 +90,20 @@ with st.form("chat_form", clear_on_submit=True):
     send = st.form_submit_button("Send")
 
     if send and user and message.strip():
-        chat_messages.append((user, message.strip()))
-        save_chat(chat_messages)
+        chat_ref.add({
+            "user": user,
+            "message": message.strip(),
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
 
-# Show recent messages
+# Show latest 30 chat messages (ordered by timestamp)
 st.markdown("### 📢 Chat Room")
-if chat_messages:
-    for user, msg in reversed(chat_messages[-30:]):
-        st.info(f"**{user}**: {msg}")
+messages = chat_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(30).stream()
+chat_list = list(messages)
+
+if chat_list:
+    for msg in reversed(chat_list):
+        m = msg.to_dict()
+        st.info(f"**{m['user']}**: {m['message']}")
 else:
     st.info("No messages yet.")
