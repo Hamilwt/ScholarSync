@@ -7,7 +7,7 @@ This app allows users to **register/view student details** and participate in a 
 
 ## 🌐 Deployment
 The ScholarSync app is deployed and accessible here:  
-👉 **[https://your-deployed-link.com](https://your-deployed-link.com)**
+👉 **[https://scholarsync.streamlit.app/](https://scholarsync.streamlit.app/)**
 
 ---
 
