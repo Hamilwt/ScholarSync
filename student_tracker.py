@@ -12,8 +12,8 @@ db = firestore.client()
 students_ref = db.collection("students")
 chat_ref = db.collection("chat")
 
-st.set_page_config(page_title="Student Tracker", layout="wide")
-st.title("📘 Student Tracker App")
+st.set_page_config(page_title="ScholarSync", layout="wide")
+st.title("🎓 ScholarSync - Student Tracker App")
 
 # --- Sidebar: Add or Select Student ---
 st.sidebar.header("👤 Student Login / Register")
@@ -85,7 +85,7 @@ if roll_no:
 st.header("💬 Global Student Chat")
 
 with st.form("chat_form", clear_on_submit=True):
-    user = st.text_input("Name", value=roll_no)
+    user = st.text_input("Name", value=name)
     message = st.text_area("Message")
     send = st.form_submit_button("Send")
 
@@ -96,9 +96,9 @@ with st.form("chat_form", clear_on_submit=True):
             "timestamp": firestore.SERVER_TIMESTAMP
         })
 
-# Show latest 30 chat messages (ordered by timestamp)
+# Show latest 100 chat messages (ordered by timestamp)
 st.markdown("### 📢 Chat Room")
-messages = chat_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(30).stream()
+messages = chat_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(100).stream()
 chat_list = list(messages)
 
 if chat_list:
