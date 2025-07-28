@@ -56,43 +56,49 @@ def is_valid_email(email):
 # --- Authentication UI ---
 def render_authentication():
     """Displays the login/register page and handles authentication logic."""
-    st.title(f"{PAGE_ICON} ScholarSync - Welcome!")
-    st.markdown("Please log in or register to continue.")
+    # --- EDITED SECTION: Centered Alignment ---
+    # Use columns to center the authentication form
+    _ , center_col, _ = st.columns([1, 1.5, 1])
 
-    mode = st.radio("Choose action:", ["Login", "Register"], horizontal=True, key="auth_mode")
+    with center_col:
+        st.title(f"{PAGE_ICON} ScholarSync - Welcome!")
+        st.markdown("Please log in or register to continue.")
 
-    with st.form("auth_form"):
-        email = st.text_input("Email", key="auth_email")
-        password = st.text_input("Password", type="password", key="auth_pw")
-        submit_button = st.form_submit_button("Submit")
+        mode = st.radio("Choose action:", ["Login", "Register"], horizontal=True, key="auth_mode")
 
-        if submit_button:
-            if not email or not password:
-                st.error("⚠️ Please enter both email and password.")
-                return
-            if not is_valid_email(email):
-                st.error("⚠️ Please enter a valid email address.")
-                return
+        with st.form("auth_form"):
+            email = st.text_input("Email", key="auth_email")
+            password = st.text_input("Password", type="password", key="auth_pw")
+            submit_button = st.form_submit_button("Submit", use_container_width=True)
 
-            user_doc_ref = db.collection(STUDENTS_COLLECTION).document(email)
-            user_doc = user_doc_ref.get()
+            if submit_button:
+                if not email or not password:
+                    st.error("⚠️ Please enter both email and password.")
+                    return
+                if not is_valid_email(email):
+                    st.error("⚠️ Please enter a valid email address.")
+                    return
 
-            if mode == "Register":
-                if user_doc.exists:
-                    st.error("User already exists. Please login.")
-                else:
-                    hashed_pw = hash_password(password)
-                    user_doc_ref.set({
-                        "password": hashed_pw,
-                        "created_at": datetime.utcnow()
-                    })
-                    st.success("✅ Registration successful! Please proceed to login.")
-            else:  # Login
-                if user_doc.exists and verify_password(password, user_doc.to_dict().get("password")):
-                    st.session_state.user = email
-                    st.rerun()
-                else:
-                    st.error("❌ Incorrect email or password.")
+                # Using the email as the document ID for the user's auth info
+                user_doc_ref = db.collection('users_auth').document(email)
+                user_doc = user_doc_ref.get()
+
+                if mode == "Register":
+                    if user_doc.exists:
+                        st.error("User already exists. Please login.")
+                    else:
+                        hashed_pw = hash_password(password)
+                        user_doc_ref.set({
+                            "password": hashed_pw,
+                            "created_at": datetime.utcnow()
+                        })
+                        st.success("✅ Registration successful! Please proceed to login.")
+                else:  # Login
+                    if user_doc.exists and verify_password(password, user_doc.to_dict().get("password")):
+                        st.session_state.user = email
+                        st.rerun()
+                    else:
+                        st.error("❌ Incorrect email or password.")
     st.stop()
 
 
