@@ -30,14 +30,41 @@ def decode_image(b64_string):
 # --- Page config ---
 st.set_page_config(page_title="🎓 ScholarSync", layout="wide")
 
+# --- Custom CSS for Centered Login ---
+st.markdown(
+    """
+    <style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 75vh;
+    }
+    .login-box {
+        width: 350px;
+        padding: 30px;
+        border-radius: 10px;
+        background: #ffffff10;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.2);
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- Authentication ---
 if "user" not in st.session_state:
     st.session_state.user = None
 
 if st.session_state.user is None:
-    st.title("🎓 ScholarSync - Login / Register")
-    mode = st.radio("Choose action:", ["Login", "Register"])
+    st.markdown("<div class='login-container'><div class='login-box'>", unsafe_allow_html=True)
+    st.title("🎓 ScholarSync")
+    st.subheader("Login / Register")
 
+    mode = st.radio("Choose action:", ["Login", "Register"], horizontal=True)
     email = st.text_input("Email", key="auth_email")
     password = st.text_input("Password", type="password", key="auth_pw")
 
@@ -70,7 +97,10 @@ if st.session_state.user is None:
                     st.error("User not found. Please register.")
             else:
                 st.error("Enter both email and password.")
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
+
 
 # --- Main App ---
 user = st.session_state.user
