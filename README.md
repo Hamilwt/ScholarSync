@@ -6,21 +6,20 @@ This app allows users to **register/view student details** and participate in a 
 ---
 
 ## 🚀 Features
+
 - **Student Registration & Update**  
   Add or update student details like name, email, course, semester, subjects, attendance, marks, and academic progress.
-
 - **Student Info Viewer**  
   Retrieve and view detailed student information stored in Firestore.
-
 - **Real-time Global Chat System**  
   Students can chat in a shared chat room with real-time updates using Firestore.
-
 - **Firebase Integration**  
   Secure and scalable backend powered by **Google Firebase Firestore**.
 
 ---
 
 ## 🛠 Tech Stack
+
 - **Frontend:** [Streamlit](https://streamlit.io/)
 - **Backend/Database:** [Google Firebase Firestore](https://firebase.google.com/products/firestore)
 - **Authentication & Config:** Firebase Admin SDK
@@ -28,96 +27,115 @@ This app allows users to **register/view student details** and participate in a 
 
 ---
 
-🚀 Getting Started
+## 📂 Project Structure
 
-Follow these instructions to get a local copy up and running.
+```
+📦 ScholarSync
+┣ 📜 app.py                    # Main Streamlit application
+┣ 📜 requirements.txt          # Python dependencies
+┣ 📜 README.md                # Project documentation
+┗ 📂 .streamlit
+  ┗ 🔑 secrets.toml           # Firebase credentials (secure config)
+```
 
-Prerequisites
+---
 
-    Python 3.8 or higher
+## 🔧 Setup & Installation
 
-    A Google Firebase account
+### 1️⃣ Clone the repository
 
-1. Clone the Repository
+```bash
+git clone https://github.com/your-username/scholarsync.git
+cd scholarsync
+```
 
-First, clone the project to your local machine.
-Bash
+### 2️⃣ Install dependencies
 
-git clone https://github.com/Hamilwt/ScholarSync.git
-cd ScholarSync
-
-2. Install Dependencies
-
-Install the required Python packages using the requirements.txt file. It's recommended to use a virtual environment.
-Bash
-
-# Create and activate a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-
-# Install packages
+```bash
 pip install -r requirements.txt
+```
 
-3. Set up Google Firebase
+### 3️⃣ Configure Firebase
 
-This application requires a Firebase project to store data.
+1. Create a Firebase project in [Firebase Console](https://console.firebase.google.com/).
+2. Generate a Service Account Key (JSON) from Project Settings → Service Accounts.
+3. Store the credentials securely in Streamlit's `secrets.toml` file:
 
-    Go to the Firebase Console and create a new project.
+```toml
+# .streamlit/secrets.toml
+[FIREBASE]
+type = "service_account"
+project_id = "your-project-id"
+private_key_id = "your-private-key-id"
+private_key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+client_email = "firebase-adminsdk@your-project-id.iam.gserviceaccount.com"
+client_id = "your-client-id"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk"
+```
 
-    In your project dashboard, go to Project Settings > Service accounts.
+⚠️ **Important:** Never commit your credentials JSON file. Always use Streamlit `secrets.toml`.
 
-    Click on "Generate new private key". A JSON file containing your service account credentials will be downloaded. Keep this file safe.
+### 4️⃣ Run the app
 
-4. Configure Streamlit Secrets
+```bash
+streamlit run app.py
+```
 
-Streamlit uses a secrets.toml file to securely store credentials.
+Your app will run locally at: `http://localhost:8501`
 
-    Create a new folder named .streamlit in the root directory of the project.
+---
 
-    Inside this folder, create a file named secrets.toml.
+## ✨ Usage
 
-    Open your downloaded Firebase JSON key and the secrets.toml file. Copy the key-value pairs from the JSON file into the secrets.toml file under a [FIREBASE] heading, like so:
-    Ini, TOML
+### 📝 Student Registration / Update
+1. Enter Roll Number.
+2. Select "Register / Update Info".
+3. Fill in the form and click Save.
 
-    # .streamlit/secrets.toml
+### 🔍 View Student Info
+1. Enter Roll Number.
+2. Select "View Info" to see student details.
 
-    [FIREBASE]
-    type = "service_account"
-    project_id = "your-firebase-project-id"
-    private_key_id = "your-private-key-id"
-    private_key = "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
-    client_email = "your-firebase-client-email"
-    client_id = "your-client-id"
-    auth_uri = "https://accounts.google.com/o/oauth2/auth"
-    token_uri = "https://oauth2.googleapis.com/token"
-    auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
-    client_x509_cert_url = "your-client-cert-url"
+### 💬 Global Chat
+1. Enter your name and message.
+2. Click Send to chat in real-time.
 
-    Important: For the private_key value, you must wrap the entire key string in double quotes (") and replace single backslashes (\) with double backslashes (\\) or use a multi-line string as shown above.
+---
 
-🖥️ Running the Application
+## 📸 Screenshots
 
-Once the setup is complete, you can run the Streamlit application with the following command:
-Bash
+(Add screenshots or demo GIFs here to showcase UI.)
 
-streamlit run student_tracker.py
+---
 
-Navigate to http://localhost:8501 in your web browser to start using ScholarSync!
+## 🔒 Security Notes
 
-🤝 Contributing
+- Keep Firebase credentials private using Streamlit secrets.
+- Use Firestore Security Rules to restrict access (e.g., only authenticated users can update student info).
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+---
 
-    Fork the Project
+## 🤝 Contributing
 
-    Create your Feature Branch (git checkout -b feature/AmazingFeature)
+Contributions are welcome!
 
-    Commit your Changes (git commit -m 'Add some AmazingFeature')
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit changes (`git commit -m "Added feature"`)
+4. Push and create a Pull Request
 
-    Push to the Branch (git push origin feature/AmazingFeature)
+---
 
-    Open a Pull Request
+## 📜 License
 
-📜 License
+This project is licensed under the MIT License.
 
-This project is distributed under the MIT License. See LICENSE for more information.
+---
+
+## 👨‍💻 Author
+
+Developed by [Your Name]  
+📧 Contact: [your.email@example.com]
