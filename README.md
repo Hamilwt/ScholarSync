@@ -23,7 +23,7 @@ This app allows users to **register/view student details** and participate in a 
 - **Frontend:** [Streamlit](https://streamlit.io/)
 - **Backend/Database:** [Google Firebase Firestore](https://firebase.google.com/products/firestore)
 - **Authentication & Config:** Firebase Admin SDK
-- **Language:** Python 3.x
+- **Language:** Python 3.13
 
 ---
 
