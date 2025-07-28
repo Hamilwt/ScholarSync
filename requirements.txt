@@ -1,4 +1,11 @@
-streamlit
-firebase-admin
-bcrypt
-
+streamlit 
+firebase-admin 
+bcrypt 
+pandas 
+plotly 
+numpy
+python-dateutil
+typing-extensions
+Pillow 
+streamlit-option-menu 
+streamlit-authenticator
