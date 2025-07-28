@@ -1,19 +1,16 @@
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
 import bcrypt
 from datetime import datetime
-import uuid
+import base64
 
 # --- Initialize Firebase ---
 if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["FIREBASE"]))
-    firebase_admin.initialize_app(cred, {
-        "storageBucket": st.secrets["FIREBASE"]["storageBucket"]
-    })
+    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
-bucket = storage.bucket()
 students_ref = db.collection("students")
 chat_ref = db.collection("chat")
 
@@ -24,23 +21,21 @@ def hash_password(pw: str) -> bytes:
 def verify_password(pw: str, hashed: bytes) -> bool:
     return bcrypt.checkpw(pw.encode(), hashed)
 
-def upload_profile_pic(file, roll_no):
-    """Upload profile picture to Firebase Storage and return its public URL."""
-    file_ext = file.name.split('.')[-1]
-    blob = bucket.blob(f"profile_pics/{roll_no}_{uuid.uuid4()}.{file_ext}")
-    blob.upload_from_file(file, content_type=file.type)
-    blob.make_public()
-    return blob.public_url
+def encode_image(file):
+    return base64.b64encode(file.read()).decode('utf-8')
+
+def decode_image(b64_string):
+    return base64.b64decode(b64_string)
 
 # --- Page config ---
-st.set_page_config(page_title="Student Tracker", layout="wide")
+st.set_page_config(page_title="🎓 ScholarSync", layout="wide")
 
 # --- Authentication ---
 if "user" not in st.session_state:
     st.session_state.user = None
 
 if st.session_state.user is None:
-    st.title("🔐 Login / Register")
+    st.title("🎓 ScholarSync - Login / Register")
     mode = st.radio("Choose action:", ["Login", "Register"])
 
     email = st.text_input("Email", key="auth_email")
@@ -77,21 +72,35 @@ if st.session_state.user is None:
                 st.error("Enter both email and password.")
     st.stop()
 
-# --- Main App after login ---
+# --- Main App ---
 user = st.session_state.user
-st.sidebar.title(f"Welcome, {user}")
+st.sidebar.title(f"🎓 ScholarSync Dashboard")
+st.sidebar.markdown(f"**Welcome, {user}**")
 if st.sidebar.button("Logout"):
     st.session_state.user = None
-    st.experimental_rerun()
+    st.rerun()
 
-st.title("📘 Student Tracker App")
+st.title("📘 ScholarSync - Student Tracker")
 
-# --- Sidebar: Select student by roll number ---
-st.sidebar.header("👤 Student Dashboard")
-roll_no = st.sidebar.text_input("Roll Number (for student record)")
+# --- Search Students ---
+st.sidebar.subheader("🔍 Search Students")
+search_name = st.sidebar.text_input("Search by Name or Course")
+if search_name:
+    results = students_ref.where("name", ">=", search_name).where("name", "<=", search_name + "\uf8ff").stream()
+    results_list = list(results)
+    if not results_list:  # Try searching by course if no name match
+        results = students_ref.where("course", ">=", search_name).where("course", "<=", search_name + "\uf8ff").stream()
+        results_list = list(results)
+    st.sidebar.markdown("### Results:")
+    for r in results_list:
+        s = r.to_dict()
+        st.sidebar.write(f"- {s['name']} ({s['course']})")
+
+# --- Sidebar: Select student ---
+st.sidebar.subheader("📂 Manage Student Records")
+roll_no = st.sidebar.text_input("Roll Number")
 action = st.sidebar.selectbox("Action", ["View / Update Info", "Add New Student", "Delete Student"])
 
-# --- Common record loader ---
 def get_student(rec):
     doc = students_ref.document(rec).get()
     return doc.to_dict() if doc.exists else None
@@ -99,7 +108,7 @@ def get_student(rec):
 # --- Add / Update / Delete logic ---
 if roll_no:
     if action == "Add New Student":
-        st.subheader("Register New Student")
+        st.subheader("➕ Register New Student")
         with st.form("add_form"):
             name = st.text_input("Full Name")
             course = st.text_input("Course")
@@ -111,7 +120,7 @@ if roll_no:
             profile_pic = st.file_uploader("Upload Profile Picture", type=["jpg", "jpeg", "png"])
             submitted = st.form_submit_button("Save")
             if submitted:
-                pic_url = upload_profile_pic(profile_pic, roll_no) if profile_pic else None
+                pic_b64 = encode_image(profile_pic) if profile_pic else None
                 data = {
                     "name": name,
                     "course": course,
@@ -120,19 +129,19 @@ if roll_no:
                     "attendance": f"{attendance}%",
                     "marks": {m.split(':')[0].strip(): int(m.split(':')[1]) for m in marks_input.split(',') if ':' in m},
                     "academic_progress": progress,
-                    "profile_pic": pic_url,
+                    "profile_pic": pic_b64,
                     "created_by": user,
                     "created_at": datetime.utcnow()
                 }
                 students_ref.document(roll_no).set(data)
-                st.success("Student added successfully!")
+                st.success("✅ Student added successfully!")
 
     elif action == "View / Update Info":
         student = get_student(roll_no)
         if student:
-            st.subheader(f"Details for {student['name']}")
+            st.subheader(f"📄 Details for {student['name']}")
             if student.get("profile_pic"):
-                st.image(student["profile_pic"], width=150, caption="Profile Picture")
+                st.image(decode_image(student["profile_pic"]), width=150, caption="Profile Picture")
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown(f"**Course:** {student['course']}")
@@ -146,7 +155,7 @@ if roll_no:
                 for sub, mk in student['marks'].items():
                     st.write(f"{sub}: {mk}/100")
 
-            if st.button("Edit Record"):
+            if st.button("✏️ Edit Record"):
                 with st.form("edit_form"):
                     name = st.text_input("Full Name", value=student['name'])
                     course = st.text_input("Course", value=student['course'])
@@ -160,9 +169,9 @@ if roll_no:
                     new_profile_pic = st.file_uploader("Upload New Profile Picture", type=["jpg","jpeg","png"])
                     updated = st.form_submit_button("Update")
                     if updated:
-                        pic_url = student.get("profile_pic")
+                        pic_b64 = student.get("profile_pic")
                         if new_profile_pic:
-                            pic_url = upload_profile_pic(new_profile_pic, roll_no)
+                            pic_b64 = encode_image(new_profile_pic)
                         students_ref.document(roll_no).update({
                             "name": name,
                             "course": course,
@@ -171,21 +180,21 @@ if roll_no:
                             "attendance": f"{attendance}%",
                             "marks": {m.split(':')[0].strip(): int(m.split(':')[1]) for m in marks_input.split(',') if ':' in m},
                             "academic_progress": progress,
-                            "profile_pic": pic_url,
+                            "profile_pic": pic_b64,
                             "updated_at": datetime.utcnow()
                         })
-                        st.success("Record updated.")
+                        st.success("✅ Record updated.")
         else:
-            st.warning("Student not found. Use 'Add New Student' to register.")
+            st.warning("⚠️ Student not found. Use 'Add New Student' to register.")
 
     else:  # Delete
         student = get_student(roll_no)
         if student:
-            if st.button("Confirm Delete"):
+            if st.button("🗑 Confirm Delete"):
                 students_ref.document(roll_no).delete()
-                st.success("Student deleted.")
+                st.success("✅ Student deleted.")
         else:
-            st.warning("Student not found.")
+            st.warning("⚠️ Student not found.")
 
 # --- Chat Section ---
 st.header("💬 Global Chat Room")
@@ -198,7 +207,7 @@ with st.form("chat_form", clear_on_submit=True):
             "timestamp": firestore.SERVER_TIMESTAMP
         })
 
-st.markdown("---")
+st.markdown("### Recent Messages")
 messages = chat_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(50).stream()
 for m in reversed(list(messages)):
     data = m.to_dict()
@@ -208,4 +217,4 @@ for m in reversed(list(messages)):
 
 # --- Footer ---
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit, Firebase Firestore & Storage")
+st.caption("🎓 ScholarSync | Built with ❤️ using Streamlit & Firebase Firestore")
