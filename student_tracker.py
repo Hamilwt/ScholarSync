@@ -8,7 +8,7 @@ import pandas as pd
 import re
 
 # --- Constants and Configuration ---
-PAGE_TITLE = "🎓 ScholarSync"
+PAGE_TITLE = "ScholarSync"
 PAGE_ICON = "🎓"
 LAYOUT = "wide"
 STUDENTS_COLLECTION = "students"
@@ -203,9 +203,9 @@ def render_student_management(action, roll_no):
             col1, col2 = st.columns([1, 2])
             with col1:
                 if student.get("profile_pic"):
-                    st.image(decode_image(student["profile_pic"]), caption="Profile Picture", use_column_width=True)
+                    st.image(decode_image(student["profile_pic"]), caption="Profile Picture", use_container_width=True)
                 else:
-                    st.image("https://via.placeholder.com/150", caption="No Image", use_column_width=True)
+                    st.image("https://via.placeholder.com/150", caption="No Image", use_container_width=True)
             with col2:
                 st.markdown(f"**Course:** {student.get('course', 'N/A')}")
                 st.markdown(f"**Semester:** {student.get('semester', 'N/A')}")
