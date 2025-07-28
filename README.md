@@ -27,25 +27,12 @@ This app allows users to **register/view student details** and participate in a 
 
 ---
 
-## 📂 Project Structure
-
-```
-📦 ScholarSync
-┣ 📜 app.py                    # Main Streamlit application
-┣ 📜 requirements.txt          # Python dependencies
-┣ 📜 README.md                # Project documentation
-┗ 📂 .streamlit
-  ┗ 🔑 secrets.toml           # Firebase credentials (secure config)
-```
-
----
-
 ## 🔧 Setup & Installation
 
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/your-username/scholarsync.git
+git clone https://github.com/hamilwt/scholarsync.git
 cd scholarsync
 ```
 
@@ -105,12 +92,6 @@ Your app will run locally at: `http://localhost:8501`
 
 ---
 
-## 📸 Screenshots
-
-(Add screenshots or demo GIFs here to showcase UI.)
-
----
-
 ## 🔒 Security Notes
 
 - Keep Firebase credentials private using Streamlit secrets.
@@ -137,5 +118,5 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Developed by [Your Name]  
-📧 Contact: [your.email@example.com]
+Developed by [Mohammed Hamil P R]  
+📧 Contact: [mohammedhamil100@gmail.com]
