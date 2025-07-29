@@ -55,7 +55,7 @@ The ScholarSync app is deployed and accessible here:
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repository-url>
+   git clone <https://github.com/Hamilwt/ScholarSync.git>
    cd scholarsync
    ```
 
@@ -237,7 +237,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email your-mohammedhamil100@gmail.com or create an issue in the GitHub repository.
+For support, email mohammedhamil100@gmail.com or create an issue in the GitHub repository.
 
 ## 🙏 Acknowledgments
 
