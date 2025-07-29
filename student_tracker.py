@@ -248,10 +248,10 @@ def render_student_management(action, roll_no):
 
 # --- Dashboard UI ---
 def render_dashboard():
-    """Displays the main dashboard with statistics using Altair for better charts."""
+    """Displays the main dashboard with statistics."""
     st.header("📊 Main Dashboard")
     students_stream = db.collection(STUDENTS_COLLECTION).stream()
-    students_list = [doc.to_dict() for doc in students_stream if 'name' in doc.to_dict()]
+    students_list = [doc.to_dict() for doc in students_stream if 'name' in doc.to_dict()]  # Filter out auth-only users
 
     if not students_list:
         st.info("No student data available yet. Add a student to see dashboard statistics.")
@@ -264,52 +264,41 @@ def render_dashboard():
     with col1:
         st.metric(label="Total Students", value=total_students)
     with col2:
-        # Added a check to prevent errors if attendance data is missing
-        if 'attendance' in df.columns and not df['attendance'].empty:
-            avg_attendance = df['attendance'].str.strip('%').astype(float).mean()
-            st.metric(label="Average Attendance", value=f"{avg_attendance:.1f}%")
-        else:
-            st.metric(label="Average Attendance", value="N/A")
+        avg_attendance = df['attendance'].str.strip('%').astype(float).mean()
+        st.metric(label="Average Attendance", value=f"{avg_attendance:.1f}%")
     with col3:
-        # Added a check to prevent errors if semester data is missing
-        if 'semester' in df.columns and not df['semester'].empty:
-            avg_semester = df['semester'].mean()
-            st.metric(label="Average Semester", value=f"{avg_semester:.1f}")
-        else:
-            st.metric(label="Average Semester", value="N/A")
+        avg_semester = df['semester'].mean()
+        st.metric(label="Average Semester", value=f"{avg_semester:.1f}")
 
     st.markdown("---")
     col1, col2 = st.columns(2)
 
+    # Academic Progress Chart
     with col1:
         st.subheader("Academic Progress Distribution")
-        if 'academic_progress' in df.columns:
-            progress_counts = df['academic_progress'].value_counts().reset_index()
-            progress_counts.columns = ['Category', 'Count']
-            
-            chart = alt.Chart(progress_counts).mark_bar().encode(
-                x=alt.X('Category:N', sort='-y', title='Academic Progress'),
-                y=alt.Y('Count:Q', title='Number of Students', scale=alt.Scale(domain=[0, progress_counts['Count'].max() + 1])),
-                tooltip=['Category', 'Count']
-            )
-            st.altair_chart(chart, use_container_width=True)
-        else:
-            st.info("No academic progress data to display.")
+        progress_counts = df['academic_progress'].value_counts().reset_index()
+        progress_counts.columns = ["Academic Progress", "Count"]
 
+        chart1 = alt.Chart(progress_counts).mark_bar().encode(
+            x=alt.X("Academic Progress", sort=None),
+            y=alt.Y("Count", scale=alt.Scale(domain=[0, progress_counts["Count"].max() + 1])),
+            tooltip=["Academic Progress", "Count"]
+        ).properties(height=300)
+        st.altair_chart(chart1, use_container_width=True)
+
+    # Students per Course Chart
     with col2:
         st.subheader("Students per Course")
-        if 'course' in df.columns:
-            course_counts = df['course'].value_counts().reset_index()
-            course_counts.columns = ['Course', 'Count']
+        course_counts = df['course'].value_counts().reset_index()
+        course_counts.columns = ["Course", "Count"]
 
-            chart = alt.Chart(course_counts).mark_bar().encode(
-                x=alt.X('Course:N', sort='-y', title='Course'),
-                y=alt.Y('Count:Q', title='Number of Students', scale=alt.Scale(domain=[0, course_counts['Count'].max() + 1])),
-                tooltip=['Course', 'Count']
-            )
-            st.altair_chart(chart, use_container_width=True)
-        else:
-            st.info("No course data to display.")
+        chart2 = alt.Chart(course_counts).mark_bar().encode(
+            x=alt.X("Course", sort=None),
+            y=alt.Y("Count", scale=alt.Scale(domain=[0, course_counts["Count"].max() + 1])),
+            tooltip=["Course", "Count"]
+        ).properties(height=300)
+        st.altair_chart(chart2, use_container_width=True)
+
 
     # Students per Course Chart
     with col2:
