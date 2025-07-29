@@ -14,7 +14,7 @@ PAGE_ICON = "🎓"
 LAYOUT = "wide"
 STUDENTS_COLLECTION = "students"
 CHAT_COLLECTION = "chat"
-ACADEMIC_PROGRESS_LEVELS = ["Excellent", "Good", "Average", "Needs Improvement"]
+ACADEMIC_PROGRESS_LEVELS = ["Excellent", "Good", "Average", "Poor"]
 
 
 # --- Firebase Initialization ---
