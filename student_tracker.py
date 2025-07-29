@@ -6,6 +6,7 @@ from datetime import datetime
 import base64
 import pandas as pd
 import re
+import altair as alt
 
 # --- Constants and Configuration ---
 PAGE_TITLE = "ScholarSync"
@@ -272,14 +273,28 @@ def render_dashboard():
     st.markdown("---")
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Academic Progress Distribution")
-        progress_counts = df['academic_progress'].value_counts()
-        st.bar_chart(progress_counts)
-    with col2:
-        st.subheader("Students per Course")
-        course_counts = df['course'].value_counts()
-        st.bar_chart(course_counts)
+    st.subheader("Academic Progress Distribution")
+    progress_counts = df['academic_progress'].value_counts().reset_index()
+    progress_counts.columns = ["Academic Progress", "Count"]
 
+    chart1 = alt.Chart(progress_counts).mark_bar().encode(
+        x=alt.X("Academic Progress", sort=None),
+        y=alt.Y("Count", scale=alt.Scale(domain=[0, progress_counts["Count"].max() + 1])),
+        tooltip=["Academic Progress", "Count"]
+    ).properties(height=300)
+    st.altair_chart(chart1, use_container_width=True)
+
+    with col2:
+    st.subheader("Students per Course")
+    course_counts = df['course'].value_counts().reset_index()
+    course_counts.columns = ["Course", "Count"]
+
+    chart2 = alt.Chart(course_counts).mark_bar().encode(
+        x=alt.X("Course", sort=None),
+        y=alt.Y("Count", scale=alt.Scale(domain=[0, course_counts["Count"].max() + 1])),
+        tooltip=["Course", "Count"]
+    ).properties(height=300)
+    st.altair_chart(chart2, use_container_width=True)
 
 # --- Chat UI ---
 def render_chat_room():
