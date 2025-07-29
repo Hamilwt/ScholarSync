@@ -300,20 +300,6 @@ def render_dashboard():
         st.altair_chart(chart2, use_container_width=True)
 
 
-    # Students per Course Chart
-    with col2:
-        st.subheader("Students per Course")
-        course_counts = df['course'].value_counts().reset_index()
-        course_counts.columns = ["Course", "Count"]
-
-        chart2 = alt.Chart(course_counts).mark_bar().encode(
-            x=alt.X("Course", sort=None),
-            y=alt.Y("Count", scale=alt.Scale(domain=[0, course_counts["Count"].max() + 1])),
-            tooltip=["Course", "Count"]
-        ).properties(height=300)
-        st.altair_chart(chart2, use_container_width=True)
-
-
 # --- Chat UI ---
 def render_chat_room():
     """Displays the global chat room."""
