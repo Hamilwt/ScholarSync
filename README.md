@@ -2,6 +2,10 @@
 
 A comprehensive student management system built with Streamlit and Firebase that enables educators to manage student records, track academic progress, and facilitate communication through an integrated chat system.
 
+## 🌐 Deployment
+The ScholarSync app is deployed and accessible here:  
+👉 **[https://scholarsync.streamlit.app/](https://scholarsync.streamlit.app/)**
+
 ## ✨ Features
 
 ### 🔐 Authentication System
@@ -46,7 +50,6 @@ A comprehensive student management system built with Streamlit and Firebase that
 
 - Python 3.7+
 - Firebase Account and Project
-- Required Python packages (see requirements below)
 
 ### Installation
 
@@ -232,19 +235,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Chat messages are limited to last 20 messages
 - Search results don't remove duplicates when students match both name and course
 
-## 🔮 Future Enhancements
-
-- [ ] **File Upload System**: Support for document attachments
-- [ ] **Bulk Import**: CSV/Excel import for student data
-- [ ] **Email Notifications**: Automated email alerts for low attendance
-- [ ] **Grade Analytics**: Advanced reporting and grade analysis
-- [ ] **Mobile App**: React Native mobile application
-- [ ] **Parent Portal**: Separate interface for parents
-- [ ] **Backup System**: Automated data backup functionality
-
 ## 📞 Support
 
-For support, email your-email@example.com or create an issue in the GitHub repository.
+For support, email your-mohammedhamil100@gmail.com or create an issue in the GitHub repository.
 
 ## 🙏 Acknowledgments
 
