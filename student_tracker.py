@@ -251,7 +251,7 @@ def render_dashboard():
     """Displays the main dashboard with statistics."""
     st.header("📊 Main Dashboard")
     students_stream = db.collection(STUDENTS_COLLECTION).stream()
-    students_list = [doc.to_dict() for doc in students_stream if 'name' in doc.to_dict()] # Filter out auth-only users
+    students_list = [doc.to_dict() for doc in students_stream if 'name' in doc.to_dict()]  # Filter out auth-only users
 
     if not students_list:
         st.info("No student data available yet. Add a student to see dashboard statistics.")
@@ -272,29 +272,33 @@ def render_dashboard():
 
     st.markdown("---")
     col1, col2 = st.columns(2)
+
+    # Academic Progress Chart
     with col1:
-    st.subheader("Academic Progress Distribution")
-    progress_counts = df['academic_progress'].value_counts().reset_index()
-    progress_counts.columns = ["Academic Progress", "Count"]
+        st.subheader("Academic Progress Distribution")
+        progress_counts = df['academic_progress'].value_counts().reset_index()
+        progress_counts.columns = ["Academic Progress", "Count"]
 
-    chart1 = alt.Chart(progress_counts).mark_bar().encode(
-        x=alt.X("Academic Progress", sort=None),
-        y=alt.Y("Count", scale=alt.Scale(domain=[0, progress_counts["Count"].max() + 1])),
-        tooltip=["Academic Progress", "Count"]
-    ).properties(height=300)
-    st.altair_chart(chart1, use_container_width=True)
+        chart1 = alt.Chart(progress_counts).mark_bar().encode(
+            x=alt.X("Academic Progress", sort=None),
+            y=alt.Y("Count", scale=alt.Scale(domain=[0, progress_counts["Count"].max() + 1])),
+            tooltip=["Academic Progress", "Count"]
+        ).properties(height=300)
+        st.altair_chart(chart1, use_container_width=True)
 
+    # Students per Course Chart
     with col2:
-    st.subheader("Students per Course")
-    course_counts = df['course'].value_counts().reset_index()
-    course_counts.columns = ["Course", "Count"]
+        st.subheader("Students per Course")
+        course_counts = df['course'].value_counts().reset_index()
+        course_counts.columns = ["Course", "Count"]
 
-    chart2 = alt.Chart(course_counts).mark_bar().encode(
-        x=alt.X("Course", sort=None),
-        y=alt.Y("Count", scale=alt.Scale(domain=[0, course_counts["Count"].max() + 1])),
-        tooltip=["Course", "Count"]
-    ).properties(height=300)
-    st.altair_chart(chart2, use_container_width=True)
+        chart2 = alt.Chart(course_counts).mark_bar().encode(
+            x=alt.X("Course", sort=None),
+            y=alt.Y("Count", scale=alt.Scale(domain=[0, course_counts["Count"].max() + 1])),
+            tooltip=["Course", "Count"]
+        ).properties(height=300)
+        st.altair_chart(chart2, use_container_width=True)
+
 
 # --- Chat UI ---
 def render_chat_room():
