@@ -55,7 +55,7 @@ The ScholarSync app is deployed and accessible here:
 
 1. **Clone the repository**
    ```bash
-   git clone <https://github.com/Hamilwt/ScholarSync.git>
+   git clone https://github.com/Hamilwt/ScholarSync.git
    cd scholarsync
    ```
 
